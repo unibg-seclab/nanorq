@@ -23,15 +23,12 @@ void dump_esi(nanorq *rq, struct ioctx *myio, FILE *oh, uint8_t sbn,
   }
 }
 
-void dump_block(nanorq *rq, struct ioctx *myio, FILE *oh, uint8_t sbn, float overhead_percent) {
-  float expected_loss = 6.0;
-
+void dump_block(nanorq *rq, struct ioctx *myio, FILE *oh, uint8_t sbn, float overhead_percent, float drop_percent) {
   uint32_t num_esi = nanorq_block_symbols(rq, sbn);
   int num_dropped = 0, num_rep = 0;
   for (uint32_t esi = 0; esi < num_esi; esi++) {
-    float dropped = ((float)(rand()) / (float)RAND_MAX) * (float)100.0;
-    float drop_prob = expected_loss;
-    if (dropped < drop_prob) {
+    float dropped = ((float)(rand()) / (float)RAND_MAX);
+    if (dropped < drop_percent) {
       num_dropped++;
     } else {
       dump_esi(rq, myio, oh, sbn, esi);
@@ -49,12 +46,12 @@ void dump_block(nanorq *rq, struct ioctx *myio, FILE *oh, uint8_t sbn, float ove
 }
 
 void usage(char *prog) {
-  fprintf(stderr, "usage:\n%s <filename> <packet_size> <overhead_percent>", prog);
+  fprintf(stderr, "usage:\n%s <filename> <packet_size> <overhead_percent> <drop_percent>", prog);
   exit(1);
 }
 
 int main(int argc, char *argv[]) {
-  if (argc < 4)
+  if (argc < 5)
     usage(argv[0]);
 
   char *infile = argv[1];
@@ -69,6 +66,7 @@ int main(int argc, char *argv[]) {
   // determine chunks, symbol size, memory usage from size
   uint16_t packet_size = strtol(argv[2], NULL, 10); // T
   float overhead_percent = strtof(argv[3], NULL);
+  float drop_percent = strtof(argv[4], NULL);
   uint8_t align = 4;
   uint16_t ss = packet_size / 2;
   uint32_t ws = packet_size * 100;
@@ -93,7 +91,7 @@ int main(int argc, char *argv[]) {
   fwrite(&oti_common, 1, sizeof(oti_common), oh);
   fwrite(&oti_scheme, 1, sizeof(oti_scheme), oh);
   for (uint8_t sbn = 0; sbn < num_sbn; sbn++) {
-    dump_block(rq, myio, oh, sbn, overhead_percent);
+    dump_block(rq, myio, oh, sbn, overhead_percent, drop_percent);
   }
   fclose(oh);
 

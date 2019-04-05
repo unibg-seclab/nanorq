@@ -5,7 +5,7 @@ war_and_peace.txt:
 
 .PHONY: peace_and_war.txt
 peace_and_war.txt: war_and_peace.txt
-	./encode war_and_peace.txt 600 0.2
+	./encode war_and_peace.txt 600 0.25 0.1
 	./decode peace_and_war.txt
 
 .PHONY: compare
