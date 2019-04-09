@@ -36,7 +36,7 @@ void dump_block(nanorq *rq, struct ioctx *myio, FILE *oh, uint8_t sbn, float ove
   }
 
   int overhead = (int) (num_esi * overhead_percent);
-  for (uint32_t esi = num_esi; esi < num_esi + num_dropped + overhead; esi++) {
+  for (uint32_t esi = num_esi; esi < num_esi + overhead; esi++) {
     dump_esi(rq, myio, oh, sbn, esi);
     num_rep++;
   }
